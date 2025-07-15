@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paddle Ball</title>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
+        canvas { border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="300"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game objects
+        let paddle = { x: 150, y: 280, width: 80, height: 10, dx: 0 };
+        let ball = { x: 200, y: 150, radius: 10, dx: 2, dy: -2 };
+        let score = 0;
+
+        // Control paddle
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') paddle.dx = -4;
+            if (e.key === 'ArrowRight') paddle.dx = 4;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') paddle.dx = 0;
+        });
+
+        // Update game
+        function update() {
+            // Move paddle
+            paddle.x += paddle.dx;
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+
+            // Move ball
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Ball collision with walls
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) ball.dx = -ball.dx;
+            if (ball.y - ball.radius < 0) ball.dy = -ball.dy;
+
+            // Ball collision with paddle
+            if (ball.y + ball.radius > paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                ball.dy = -ball.dy;
+                score++;
+            }
+
+            // Game over
+            if (ball.y + ball.radius > canvas.height) {
+                alert(`Game Over! Score: ${score}\nPress OK to restart`);
+                ball.x = 200;
+                ball.y = 150;
+                ball.dx = 2;
+                ball.dy = -2;
+                paddle.x = 150;
+                score = 0;
+            }
+        }
+
+        // Draw game
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw paddle
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFF';
+            ctx.fill();
+            ctx.closePath();
+
+            // Draw score
+            ctx.fillStyle = '#FFF';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 20);
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
